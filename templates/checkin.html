@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>簽到</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+  <h3>👋 歡迎 {{ user.name }}</h3>
+  <p>請將 QR Code 對準鏡頭進行簽到</p>
+
+  <!-- 相機容器 -->
+  <div id="reader" style="width: 100%; max-width: 400px;"></div>
+  <div id="result" class="mt-3"></div>
+
+  <div class="mt-4">
+    <a href="/emergency" class="btn btn-danger">🚨 緊急通報</a>
+    <a href="/logout" class="btn btn-secondary">登出</a>
+  </div>
+
+  <!-- LINE 無法用相機提醒 -->
+  <script>
+    const ua = navigator.userAgent.toLowerCase();
+    if (ua.includes("line")) {
+      alert("⚠️ LINE 瀏覽器無法開啟相機，請使用 Safari 或 Chrome 開啟此頁！");
+    }
+  </script>
+
+  <!-- 自動開啟後鏡頭 QR 掃描 -->
+  <script>
+    function onScanSuccess(decodedText, decodedResult) {
+      fetch("/checkin", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ point: decodedText })
+      })
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('result').innerHTML =
+          `<div class="alert alert-success">✅ ${data.message}</div>`;
+      })
+      .catch(err => {
+        document.getElementById('result').innerHTML =
+          `<div class="alert alert-danger">❌ 發生錯誤，請重試</div>`;
+      });
+    }
+
+    function onScanFailure(error) {
+      // 可以忽略錯誤或列印 console.log(error);
+    }
+
+    const html5QrCode = new Html5Qrcode("reader");
+
+    Html5Qrcode.getCameras().then(cameras => {
+      if (!cameras || cameras.length === 0) {
+        document.getElementById('result').innerHTML =
+          `<div class="alert alert-danger">❌ 找不到可用相機</div>`;
+        return;
+      }
+
+      // 嘗試後鏡頭（環境鏡頭）
+      html5QrCode.start(
+        { facingMode: { exact: "environment" } },
+        {
+          fps: 10,
+          qrbox: 250,
+        },
+        onScanSuccess,
+        onScanFailure
+      ).catch(err => {
+        console.warn("後鏡頭開啟失敗，改用前鏡頭", err);
+
+        // fallback：改用前鏡頭
+        html5QrCode.start(
+          { facingMode: "user" },
+          {
+            fps: 10,
+            qrbox: 250,
+          },
+          onScanSuccess,
+          onScanFailure
+        ).catch(err2 => {
+          document.getElementById('result').innerHTML =
+            `<div class="alert alert-danger">❌ 相機開啟失敗：${err2}</div>`;
+        });
+      });
+    }).catch(err => {
+      document.getElementById('result').innerHTML =
+        `<div class="alert alert-danger">❌ 開啟相機失敗：${err}</div>`;
+    });
+  </script>
+</body>
+</html>

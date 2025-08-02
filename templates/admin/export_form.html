@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}匯出簽到紀錄{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <div class="card shadow rounded-4">
+    <div class="card-body">
+      <h3 class="mb-4">📤 匯出簽到紀錄</h3>
+      <form method="post" action="/admin/export_records">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">起始日期</label>
+            <input type="date" class="form-control" name="start_date" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">結束日期</label>
+            <input type="date" class="form-control" name="end_date" required>
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-success">
+              <i class="bi bi-download me-1"></i> 匯出 CSV
+            </button>
+            <a href="/admin" class="btn btn-secondary">返回</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

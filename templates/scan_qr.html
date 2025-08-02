@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>掃碼簽到</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.7/minified/html5-qrcode.min.js"></script>
+  <style>
+    #reader {
+      width: 100%;
+      max-width: 400px;
+      margin: auto;
+    }
+    .center {
+      text-align: center;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body class="center">
+  <h3>📷 請掃描 QR Code</h3>
+  <div id="reader"></div>
+  <p id="status"></p>
+
+  <script>
+    const reader = new Html5Qrcode("reader");
+
+    reader.start(
+      { facingMode: "environment" },
+      {
+        fps: 10,
+        qrbox: 250
+      },
+      (decodedText, decodedResult) => {
+        reader.stop();
+        document.getElementById("status").textContent = "🔄 傳送中...";
+        // 送出掃到的內容
+        fetch("/checkin/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ data: decodedText })
+        })
+        .then(res => res.json())
+        .then(result => {
+          if (result.ok) {
+            alert("✅ 簽到成功！");
+          } else {
+            alert("❌ " + result.error);
+          }
+          window.location.href = "/member_checkin_home";
+        });
+      },
+      (errorMessage) => {
+        // 可忽略錯誤訊息
+      }
+    );
+  </script>
+</body>
+</html>

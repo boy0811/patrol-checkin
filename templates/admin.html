@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>管理後台</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f5f5f5;
+      font-family: "Microsoft JhengHei", sans-serif;
+      font-size: 1.25rem; /* 🔸 整體字體放大 */
+    }
+    h2 {
+      font-size: 2rem;
+      font-weight: bold;
+    }
+    .card {
+      min-width: 420px;
+    }
+    .card-header {
+      background-color: #f8f9fa;
+      font-size: 1.5rem;
+      font-weight: bold;
+    }
+    .list-group-item {
+      font-size: 1.25rem;
+    }
+    .list-group-item i {
+      width: 1.75rem;
+      margin-right: 6px;
+    }
+    .list-group-item a {
+      text-decoration: none;
+      color: #000;
+    }
+    .btn {
+      font-size: 1.25rem;
+      padding: 0.5rem 1.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container py-5">
+    <h2 class="mb-4"><i class="bi bi-tools"></i> 管理後台</h2>
+
+    <div class="row g-4">
+      <!-- 🔹 簽到功能區 -->
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-header"><i class="bi bi-clipboard-check"></i> 發到與報表</div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><i class="bi bi-upc-scan text-primary"></i> <a href="/admin/qrcodes">產生 QR Code</a></li>
+            <li class="list-group-item"><i class="bi bi-journal-text text-primary"></i> <a href="/admin/records">查看簽到紀錄</a></li>
+            <li class="list-group-item"><i class="bi bi-exclamation-triangle text-danger"></i> <a href="/admin/reports">查看緊急通報</a></li>
+            <li class="list-group-item"><i class="bi bi-download text-success"></i> <a href="/admin/export_form">匯出簽到紀錄</a>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 🔹 帳號與巡邏點區 -->
+      <div class="col-md-6">
+        <div class="card shadow">
+          <div class="card-header"><i class="bi bi-person-badge"></i> 帳號與巡邏點管理</div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><i class="bi bi-people-fill text-dark"></i> <a href="/admin/members">隊員帳號管理</a></li>
+            <li class="list-group-item"><i class="bi bi-geo-alt-fill text-dark"></i> <a href="/admin/points">巡邏點管理</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- 🔹 登出 -->
+    <div class="mt-5 text-end">
+      <a href="/logout" class="btn btn-outline-secondary"><i class="bi bi-box-arrow-right"></i> 登出</a>
+    </div>
+  </div>
+</body>
+</html>

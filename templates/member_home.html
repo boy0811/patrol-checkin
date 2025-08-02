@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>隊員主頁</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .point-btn {
+      margin: 8px;
+      width: 100%;
+    }
+    .container {
+      max-width: 600px;
+    }
+  </style>
+</head>
+<body class="container text-center mt-4">
+
+  <h4 class="mb-3">👋 {{ member.name }}，您好！</h4>
+  <p class="text-muted mb-4">點選下方任一巡邏點即可簽到</p>
+
+  {% for point in points %}
+    <a href="{{ url_for('checkin') }}?point={{ point.code }}" class="btn btn-outline-primary point-btn">
+      📍 {{ point.name }}
+    </a>
+  {% endfor %}
+
+  <a href="/logout" class="btn btn-secondary mt-4 d-block">登出</a>
+
+</body>
+</html>

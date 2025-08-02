@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>簽到紀錄</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: "Microsoft JhengHei", sans-serif;
+      background-color: #f5f5f5;
+      padding: 20px;
+    }
+    .table thead th {
+      background-color: #007bff;
+      color: white;
+    }
+    .card-header.bg-success {
+      background-color: #28a745 !important;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h3 class="text-center mb-4">
+      <i class="bi bi-clipboard2-check-fill me-2"></i>簽到紀錄
+    </h3>
+
+    <div class="card mb-4">
+      <div class="card-header bg-success text-white">
+        <i class="bi bi-list-ul me-2"></i> 簽到資料一覽
+      </div>
+      <div class="card-body p-0">
+        <table class="table table-bordered m-0">
+          <thead class="text-center">
+            <tr>
+              <th>帳號</th>
+              <th>姓名</th>
+              <th>巡邏點</th>
+              <th>時間</th>
+            </tr>
+          </thead>
+          <tbody id="recordTable" class="text-center">
+            <!-- 資料將由 JS 載入 -->
+            <tr><td colspan="4">🔄 載入中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="text-center mt-4">
+      <a href="/admin" class="btn btn-outline-secondary">
+        ⬅ 返回管理後台
+      </a>
+    </div>
+  </div>
+
+  <script>
+    function loadRecords() {
+      fetch('/admin/api/records')
+        .then(response => response.json())
+        .then(data => {
+          const tbody = document.getElementById('recordTable');
+          tbody.innerHTML = '';
+
+          if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" class="text-muted">目前尚無簽到紀錄</td></tr>';
+            return;
+          }
+
+          data.forEach(record => {
+            const row = `
+              <tr>
+                <td>${record.account}</td>
+                <td>${record.name}</td>
+                <td>${record.point}</td>
+                <td>${record.timestamp}</td>
+              </tr>`;
+            tbody.innerHTML += row;
+          });
+        })
+        .catch(err => {
+          console.error('載入紀錄失敗：', err);
+        });
+    }
+
+    loadRecords();  // 頁面載入時呼叫
+    setInterval(loadRecords, 10000);  // 每 10 秒自動更新
+  </script>
+</body>
+</html>
