@@ -1,4 +1,5 @@
-Flask
-Flask-SQLAlchemy
-Werkzeug
-qrcode
+Flask  
+Flask-SQLAlchemy  
+Werkzeug  
+qrcode  
+gunicorn
