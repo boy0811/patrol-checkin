@@ -108,6 +108,13 @@ def create_admin():
 
     return "✅ 已建立預設管理員 admin / 1234，且此路由已自動移除"
 
+@app.route("/admin/rebuild-db")
+def rebuild_db():
+    from models import db
+    db.drop_all()
+    db.create_all()
+    return "✅ 已重建資料庫（所有資料已清空）"
+
 # force git detect change
 # ✅ 主程式（僅限本地測試）
 if __name__ == '__main__':
