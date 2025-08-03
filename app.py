@@ -113,13 +113,19 @@ def rebuild_db():
     db.drop_all()
     db.create_all()
 
-    # 建立初始帳號
     admin = Member(account='admin', title='隊長', name='管理員')
-    admin.set_password('1234')  # 🔹 設定雜湊密碼
+    admin.set_password('1234')  # ✅ 正確建立密碼雜湊
     db.session.add(admin)
 
+    points = [
+        Point(code='A01', name='大門口'),
+        Point(code='A02', name='操場'),
+        Point(code='A03', name='後門'),
+    ]
+    db.session.add_all(points)
+
     db.session.commit()
-    return '✅ 資料庫已重建，初始帳號 admin / 1234'
+    return '✅ 資料庫已重建，並加入管理員與巡邏點！'
 
 # force git detect change
 # ✅ 主程式（僅限本地測試）
