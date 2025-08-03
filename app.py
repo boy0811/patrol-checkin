@@ -129,8 +129,6 @@ def rebuild_db():
 
 # force git detect change
 # ✅ 主程式（僅限本地測試）
-if __name__ == '__main__':
-    print("✔ 使用的資料庫：", app.config['SQLALCHEMY_DATABASE_URI'])
-    with app.app_context():
-        db.create_all()
-    app.run(debug=True, host='0.0.0.0', port=5000)
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))  # ⬅️ 使用 Render 指定的 PORT，預設為 5000
+    app.run(host='0.0.0.0', port=port)
