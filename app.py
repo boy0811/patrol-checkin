@@ -70,6 +70,8 @@ app.cli.add_command(init_db_command)
 # ✅ 臨時網頁建表（部署後可透過網址觸發）
 @app.route("/initdb")
 def init_db_web():
+    if not session.get("admin"):
+        return "⛔ 你沒有權限使用此功能", 403
     try:
         db.create_all()
         return "✅ 資料表已成功建立"
