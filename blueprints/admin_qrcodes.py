@@ -1,6 +1,6 @@
 import os
 import qrcode
-from flask import Blueprint, render_template, session, redirect
+from flask import Blueprint, render_template, session, redirect, url_for, flash
 from models import db, Member, Point
 
 admin_qrcodes_bp = Blueprint('admin_qrcodes', __name__, url_prefix='/admin/qrcodes')
@@ -17,29 +17,46 @@ def is_admin_user():
         return user and user.title in ['隊長', '副分隊長', '分隊長']
     return False
 
-# ✅ 若主程式有這函式，就引用，否則放這裡一份
-def get_ngrok_url():
-    try:
-        import requests
-        res = requests.get("http://127.0.0.1:4040/api/tunnels")
-        data = res.json()
-        for t in data['tunnels']:
-            if t['public_url'].startswith('http://'):
-                return t['public_url']
-    except:
-        return "http://localhost:5000"
-
-# ✅ QR code 生成功能
+# ✅ 主頁：列出 QR Code
 @admin_qrcodes_bp.route('/')
-def admin_qrcodes():
+def qrcode_list():
     if not is_admin_user():
-        return redirect('/login')
+        return redirect(url_for('login'))
 
-    base_url = get_ngrok_url() + "/checkin"
+    qrcodes = []
     points = Point.query.all()
-    for p in points:
-        url = f"{base_url}?point={p.code}"
-        img = qrcode.make(url)
-        img.save(os.path.join(QRCODE_DIR, f"{p.code}.png"))
+    for point in points:
+        filename = f"{point.code}.png"
+        filepath = os.path.join(QRCODE_DIR, filename)
+        if not os.path.exists(filepath):
+            # ✅ 改為部署用網址
+            qr_url = url_for('checkin.checkin_by_code', code=point.code, _external=True)
+            img = qrcode.make(qr_url)
+            img.save(filepath)
+        qrcodes.append({
+            'code': point.code,
+            'name': point.name,
+            'filename': filename
+        })
+    return render_template('admin_qrcodes.html', qrcodes=qrcodes)
 
-    return render_template('qrcodes.html', points=points)
+# ✅ 一鍵清除並重建
+@admin_qrcodes_bp.route('/refresh', endpoint='refresh_qrcodes')
+def refresh_qrcodes():
+    if not is_admin_user():
+        return redirect(url_for('login'))
+
+    for fname in os.listdir(QRCODE_DIR):
+        if fname.endswith('.png'):
+            os.remove(os.path.join(QRCODE_DIR, fname))
+
+    points = Point.query.all()
+    for point in points:
+        filename = f"{point.code}.png"
+        filepath = os.path.join(QRCODE_DIR, filename)
+        qr_url = url_for('checkin.checkin_by_code', code=point.code, _external=True)
+        img = qrcode.make(qr_url)
+        img.save(filepath)
+
+    flash("✅ 所有 QR Code 已重新建立（已清除舊檔）", "success")
+    return redirect(url_for('admin_qrcodes.qrcode_list'))

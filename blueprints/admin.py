@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, session, send_file
 from models import db, Member, Point
+from models import Report
 import qrcode
 import os
 
@@ -24,26 +25,10 @@ def admin_home():
         return redirect('/login')
     return render_template('admin.html')
 
-# ✅ 產生並顯示 QR Code 圖片頁
-@admin_bp.route('/qrcodes')
-def generate_qrcodes():
-    if not is_admin_user():
-        return redirect('/login')
+@admin_bp.route('/admin/')
+def admin_dashboard():
+    # 查詢是否有未處理的通報（你可以自訂條件，如 timestamp 在今天 或全部）
+    unread_reports = Report.query.order_by(Report.timestamp.desc()).all()
+    has_reports = len(unread_reports) > 0
 
-    points = Point.query.all()
-    qrcodes = []
-
-    for point in points:
-        qr_data = point.name  # 若要改成網址可改成 f"http://127.0.0.1:5000/checkin/scan/{point.id}"
-        qr_path = os.path.join(QR_DIR, f"{point.name}.png")
-
-        if not os.path.exists(qr_path):
-            img = qrcode.make(qr_data)
-            img.save(qr_path)
-
-        qrcodes.append({
-            "name": point.name,
-            "path": f"/{qr_path}"
-        })
-
-    return render_template("admin_qrcodes.html", qrcodes=qrcodes)
+    return render_template('admin_dashboard.html', has_reports=has_reports)

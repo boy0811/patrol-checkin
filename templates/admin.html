@@ -52,7 +52,14 @@
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><i class="bi bi-upc-scan text-primary"></i> <a href="/admin/qrcodes">產生 QR Code</a></li>
             <li class="list-group-item"><i class="bi bi-journal-text text-primary"></i> <a href="/admin/records">查看簽到紀錄</a></li>
-            <li class="list-group-item"><i class="bi bi-exclamation-triangle text-danger"></i> <a href="/admin/reports">查看緊急通報</a></li>
+            <li class="list-group-item">
+              <i class="bi bi-exclamation-triangle text-danger"></i>
+              <a href="/admin/reports">查看緊急通報</a>
+              {% if has_reports %}
+                <span class="badge bg-danger ms-2">有通報</span>
+              {% endif %}
+            </li>
+
             <li class="list-group-item"><i class="bi bi-download text-success"></i> <a href="/admin/export_form">匯出簽到紀錄</a>
           </ul>
         </div>

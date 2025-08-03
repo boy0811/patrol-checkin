@@ -40,6 +40,14 @@
     <h4 class="mb-3">👣 巡邏簽到</h4>
     <p class="text-muted">點選下方巡邏點進行掃碼簽到：</p>
 
+    <!-- ✅ 緊急通報按鈕（導向 emergency.html） -->
+    <div class="d-grid gap-2 mb-4">
+      <a href="{{ url_for('emergency.emergency') }}" class="btn btn-danger btn-lg">
+        🚨 緊急通報
+      </a>
+   </div>
+
+    <!-- ✅ 巡邏點按鈕列表 -->
     <div class="d-grid gap-3">
       {% for point in points %}
         {% if point.id in checked_ids %}
@@ -54,4 +62,4 @@
   </div>
 
 </body>
-</html>
+</html>  

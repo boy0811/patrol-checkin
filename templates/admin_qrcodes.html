@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>QR Code 管理</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { font-family: "Microsoft JhengHei", sans-serif; }
+    img { max-height: 180px; }
+  </style>
+</head>
+<body class="p-4">
+  <div class="container">
+    <h3 class="mb-4">📌 各巡邏點 QR Code（點圖可下載）</h3>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, msg in messages %}
+          <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+            {{ msg }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="mb-3 text-end">
+      <a href="{{ url_for('admin_qrcodes.refresh_qrcodes') }}" class="btn btn-warning">🔄 重新產生全部 QR Code</a>
+    </div>
+
+    {% if qrcodes %}
+    <div class="row">
+      {% for item in qrcodes %}
+      <div class="col-md-3 text-center mb-4">
+        <h6 class="fw-bold">{{ item.code }}</h6>
+        <a href="{{ url_for('static', filename='qrcodes/' ~ item.filename) }}" download="{{ item.filename }}">
+          <img src="{{ url_for('static', filename='qrcodes/' ~ item.filename) }}" class="img-fluid border mt-2" alt="QR Code">
+        </a>
+        <div class="mt-2">
+          <a href="{{ url_for('static', filename='qrcodes/' ~ item.filename) }}" download="{{ item.filename }}">
+            ⬇ 下載 QR 圖片
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-center text-muted">目前尚無巡邏點資料</p>
+    {% endif %}
+
+    <div class="text-center mt-4">
+      <a href="/admin" class="btn btn-secondary">返回後台</a>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
