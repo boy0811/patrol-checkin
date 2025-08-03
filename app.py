@@ -10,6 +10,8 @@ from blueprints.admin_records import admin_records_bp
 from blueprints.checkin import checkin_bp
 from blueprints.admin_qrcodes import admin_qrcodes_bp
 from blueprints.emergency import emergency_bp
+from models import Member, Point  # ← ⬅️ 加入 Point
+
 
 import os
 import click
