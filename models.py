@@ -7,7 +7,7 @@ db = SQLAlchemy()
 class Member(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     account = db.Column(db.String(50), unique=True, nullable=False)
-    password_hash = db.Column(db.String(100), nullable=False)  # 密碼雜湊
+    password_hash = db.Column(db.String(256), nullable=False)  # 密碼雜湊（更長）
     name = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(50))  # 職稱，例如隊長、隊員
 
