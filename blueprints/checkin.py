@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, session, redirect, jsonify
 from models import db, Member, Point, Record
-from datetime import datetime
+from datetime import datetime, date
+from sqlalchemy import func
 
 checkin_bp = Blueprint('checkin', __name__)
 
@@ -13,7 +14,15 @@ def member_checkin_home():
 
     member = db.session.get(Member, member_id)
     points = Point.query.order_by(Point.id.asc()).all()
-    checked_ids = [r.point_id for r in Record.query.filter_by(member_id=member_id).all()]
+
+    # ✅ 改為只抓「今天簽到過」的紀錄
+    checked_ids = [
+        r.point_id for r in Record.query
+        .filter_by(member_id=member_id)
+        .filter(func.date(Record.timestamp) == date.today())
+        .all()
+    ]
+
     return render_template('member_checkin_home.html', member=member, points=points, checked_ids=checked_ids)
 
 # ✅ 掃碼頁（開啟照相機）
@@ -38,9 +47,11 @@ def checkin_post():
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    exists = Record.query.filter_by(member_id=member_id, point_id=point.id).first()
+    # ✅ 改為只查今天是否簽過
+    exists = Record.query.filter_by(member_id=member_id, point_id=point.id) \
+        .filter(func.date(Record.timestamp) == date.today()).first()
     if exists:
-        return jsonify({"message": f"✅ 您已簽到過 {point.name}"}), 200
+        return jsonify({"message": f"✅ 您今天已簽到過 {point.name}"}), 200
 
     record = Record(member_id=member_id, point_id=point.id, timestamp=datetime.now())
     db.session.add(record)
@@ -59,7 +70,7 @@ def checkin_by_code(code):
         return render_template('not_found.html', code=code)
     return render_template('scan_qr.html', point=point)
 
-# ✅ 加這個處理 GET /checkin 頁面
+# ✅ 處理 GET /checkin 頁面
 @checkin_bp.route('/checkin', methods=['GET'])
 def checkin_redirect():
     return redirect('/member_checkin_home')
