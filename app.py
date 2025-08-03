@@ -48,6 +48,16 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_DIR, filename)
 
+# 顯示目前資料庫資訊
+from flask import jsonify
+
+@app.route("/dbinfo")
+def db_info():
+    db_url = str(db.engine.url)
+    return jsonify({
+        "目前使用的資料庫": db_url
+    })
+
 # 主程式啟動
 if __name__ == '__main__':
     print("✔ 使用的資料庫：", app.config['SQLALCHEMY_DATABASE_URI'])
