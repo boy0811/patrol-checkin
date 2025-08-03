@@ -76,6 +76,7 @@ def init_db_web():
     except Exception as e:
         return f"❌ 建立失敗：{e}"
 
+# force git detect change
 # ✅ 主程式（僅限本地測試）
 if __name__ == '__main__':
     print("✔ 使用的資料庫：", app.config['SQLALCHEMY_DATABASE_URI'])
