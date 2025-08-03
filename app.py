@@ -108,12 +108,14 @@ def create_admin():
 
     return "✅ 已建立預設管理員 admin / 1234，且此路由已自動移除"
 
-@app.route("/admin/rebuild-db")
+@app.route('/rebuild-db')
 def rebuild_db():
-    from models import db
     db.drop_all()
     db.create_all()
-    return "✅ 已重建資料庫（所有資料已清空）"
+    admin = Member(account='admin', password='1234', title='隊長', name='管理員')
+    db.session.add(admin)
+    db.session.commit()
+    return "資料庫已重建，初始帳號 admin / 1234"
 
 # force git detect change
 # ✅ 主程式（僅限本地測試）
