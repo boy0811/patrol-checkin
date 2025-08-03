@@ -129,6 +129,20 @@ def rebuild_db():
     db.session.commit()
     return '✅ 資料庫已重建，並加入管理員與巡邏點！'
 
+@app.route("/dev-init")
+def dev_init():
+    from models import db, Member
+    db.create_all()
+
+    # 新增管理員帳號
+    if not Member.query.filter_by(account='admin').first():
+        admin = Member(account='admin', name='管理員', title='隊長')
+        admin.set_password('1234')
+        db.session.add(admin)
+        db.session.commit()
+
+    return "✅ 初始化成功，已建立資料表與預設 admin 帳號（admin/1234）"
+
 # force git detect change
 # ✅ 主程式（僅限本地測試）
 if __name__ == "__main__":
