@@ -22,7 +22,7 @@ app.secret_key = 'checkin_secret_key'
 if os.environ.get("RENDER") == "true":
     # ❌ 注意：這一行會導致部分路由無法運作，應該註解掉
     # app.config['SERVER_NAME'] = 'patrol-checkin-1.onrender.com'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL") + "?sslmode=require"
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///checkin.db'
 
