@@ -48,9 +48,10 @@ def checkin_post():
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    cutoff = datetime.now() - timedelta(minutes=10)  # ✅ 時區計算
+    cutoff = datetime.now(tz=tw) - timedelta(minutes=10)  # ✅ 使用台灣時區
     exists = Record.query.filter_by(member_id=member_id, point_id=point.id) \
-        .filter(Record.timestamp >= cutoff_time).first()
+        .filter(Record.timestamp >= cutoff).first()
+
     if exists:
         return jsonify({"message": f"✅ 您已簽到過 {point.name}，請間隔 10 分鐘再試"}), 200
 
@@ -62,6 +63,7 @@ def checkin_post():
         "message": f"✅ {point.name} 簽到成功",
         "redirect": "/member_checkin_home"
     })
+
 
 # ✅ 處理 QR Code 開啟的網址
 @checkin_bp.route('/checkin/<code>')
