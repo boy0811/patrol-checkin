@@ -2,7 +2,7 @@ services:
   - type: web
     name: patrol-checkin-1
     env: python
-    buildCommand: flask init-db
+    buildCommand: ""  # ✅ 空的，不要跑 init-db
     startCommand: gunicorn app:app
     envVars:
       - key: FLASK_ENV

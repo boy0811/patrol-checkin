@@ -70,15 +70,16 @@ def init_db_command():
 app.cli.add_command(init_db_command)
 
 # ✅ 臨時網頁建表（部署後可透過網址觸發）
+import os
+
 @app.route("/initdb")
 def init_db_web():
-    if not session.get("admin"):
-        return "⛔ 你沒有權限使用此功能", 403
     try:
         db.create_all()
         return "✅ 資料表已成功建立"
     except Exception as e:
         return f"❌ 建立失敗：{e}"
+
 
 from models import Member  # 確保有這一行
 from werkzeug.security import generate_password_hash  # ⬅️ 加上這
@@ -142,6 +143,15 @@ def dev_init():
         db.session.commit()
 
     return "✅ 初始化成功，已建立資料表與預設 admin 帳號（admin/1234）"
+
+@app.route("/dbtest")
+def db_test():
+    try:
+        conn = db.engine.connect()
+        conn.close()
+        return "✅ 成功連線到資料庫"
+    except Exception as e:
+        return f"❌ 無法連線到資料庫：{e}"
 
 # force git detect change
 # ✅ 主程式（僅限本地測試）
