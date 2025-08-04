@@ -1,10 +1,10 @@
 from flask import Blueprint, render_template, request, session, redirect, jsonify
 from models import db, Member, Point, Record
-from datetime import datetime, date
-from sqlalchemy import func
 from datetime import datetime, timedelta
+from pytz import timezone
 
 checkin_bp = Blueprint('checkin', __name__)
+tw = timezone('Asia/Taipei')  # ✅ 台灣時區
 
 # ✅ 簽到首頁（按鈕列表）
 @checkin_bp.route('/member_checkin_home')
@@ -16,12 +16,11 @@ def member_checkin_home():
     member = db.session.get(Member, member_id)
     points = Point.query.order_by(Point.id.asc()).all()
 
-    # ✅ 改為只抓「2 小時內簽到過」的紀錄
-    cutoff = datetime.now() - timedelta(minutes=120)
+    cutoff_time = datetime.now() - timedelta(minutes=10)
     checked_ids = [
         r.point_id for r in Record.query
         .filter_by(member_id=member_id)
-        .filter(Record.timestamp >= cutoff)
+        .filter(Record.timestamp >= cutoff_time)  # ✅ 改這裡
         .all()
     ]
 
@@ -39,24 +38,23 @@ def scan_qr(point_id):
 @checkin_bp.route('/checkin', methods=['POST'])
 def checkin_post():
     data = request.get_json()
-    point_code = data.get('point')  # ✅ 改為 code
+    point_code = data.get('point')  # ✅ QR code 傳入的地點代碼
     member_id = session.get('user_id')
 
     if not point_code or not member_id:
         return jsonify({"message": "❌ 資料不完整"}), 400
 
-    point = Point.query.filter_by(code=point_code).first()  # ✅ 用 code 查
+    point = Point.query.filter_by(code=point_code).first()
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    # ✅ 改為查詢「2 小時內是否已簽到過」
-    cutoff_time = datetime.now() - timedelta(hours=2)
+    cutoff = datetime.now() - timedelta(minutes=10)  # ✅ 時區計算
     exists = Record.query.filter_by(member_id=member_id, point_id=point.id) \
         .filter(Record.timestamp >= cutoff_time).first()
     if exists:
-        return jsonify({"message": f"✅ 您已簽到過 {point.name}，請間隔 2 小時再試"}), 200
+        return jsonify({"message": f"✅ 您已簽到過 {point.name}，請間隔 10 分鐘再試"}), 200
 
-    record = Record(member_id=member_id, point_id=point.id, timestamp=datetime.now())
+    record = Record(member_id=member_id, point_id=point.id, timestamp=datetime.now(tz=tw))
     db.session.add(record)
     db.session.commit()
 
@@ -64,7 +62,6 @@ def checkin_post():
         "message": f"✅ {point.name} 簽到成功",
         "redirect": "/member_checkin_home"
     })
-
 
 # ✅ 處理 QR Code 開啟的網址
 @checkin_bp.route('/checkin/<code>')
@@ -74,7 +71,7 @@ def checkin_by_code(code):
         return render_template('not_found.html', code=code)
     return render_template('scan_qr.html', point=point)
 
-# ✅ 處理 GET /checkin 頁面
+# ✅ GET 頁面導回主頁
 @checkin_bp.route('/checkin', methods=['GET'])
 def checkin_redirect():
     return redirect('/member_checkin_home')
