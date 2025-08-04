@@ -6,52 +6,33 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f8f9fa;
-      padding: 20px;
-      padding-top: 70px; /* 為 call-bar 預留空間 */
+    body{
+      background:#f8f9fa;
+      padding:20px;
+      padding-top:84px;        /* ↑ 為頂端按鈕保留空間 */
+      font-family:"Microsoft JhengHei",sans-serif;
     }
-    .report-box {
-      background: white;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-      max-width: 500px;
-      margin: 0 auto;
+    .call-bar{
+      position:fixed; top:0; left:0; width:100%;
+      padding:12px 0;         /* 與下方陰影寬度一致 */
+      text-align:center; z-index:1050;
+      backdrop-filter:blur(4px);      /* 淡淡玻璃效果 */
     }
-    .btn-lg {
-      font-size: 1.25rem;
-      padding: 0.75rem;
+    .report-box{
+      background:#fff; padding:30px; border-radius:16px;
+      box-shadow:0 5px 15px rgba(0,0,0,.1); max-width:500px; margin:auto;
     }
-    .call-bar {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      background-color: #dc3545;
-      color: white;
-      text-align: center;
-      padding: 12px;
-      font-size: 1.2rem;
-      z-index: 9999;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    .call-bar a {
-      color: white;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .call-bar i {
-      margin-right: 6px;
-    }
+    .btn-lg{font-size:1.25rem; padding:.8rem 1.5rem;}
   </style>
 </head>
 <body>
 
   <!-- 🔔 一鍵撥打 -->
   <div class="call-bar">
-    <a href="tel:034938381" aria-label="撥打派出所電話">
-      📞 一鍵撥打派出所：034938381
+    <a href="tel:034938381"
+       class="btn btn-danger btn-lg fw-bold shadow-sm"
+       style="border-radius:50px">
+      📞 一鍵撥打宋屋派出所 034-938-381
     </a>
   </div>
 
