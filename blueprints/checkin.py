@@ -1,6 +1,8 @@
 from flask import Blueprint, render_template, request, session, redirect, jsonify, flash
 from models import db, Member, Point, Record
 from datetime import datetime
+from datetime import datetime, timedelta
+from pytz import timezone  # 加在檔案最上方
 
 checkin_bp = Blueprint('checkin', __name__)
 
@@ -26,7 +28,7 @@ def scan_qr(point_id):
     return render_template('scan_qr.html', point=point)
 
 
-# ✅ 接收 QR 內容進行簽到（不限制 10 分鐘）
+# ✅ 檢查是否在 5 分鐘內簽到過該地點
 @checkin_bp.route('/checkin', methods=['POST'])
 def checkin_post():
     data = request.get_json()
@@ -40,8 +42,23 @@ def checkin_post():
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    # ✅ 不做重複簽到判斷，直接寫入
-    record = Record(member_id=member_id, point_id=point.id, timestamp=datetime.utcnow())
+    # ✅ 使用台灣時間（GMT+8）
+    taipei = timezone('Asia/Taipei')
+    now = datetime.now(taipei)
+    five_minutes_ago = now - timedelta(minutes=5)
+
+    # ✅ 檢查是否在 5 分鐘內簽到過該地點
+    recent_record = Record.query.filter_by(member_id=member_id, point_id=point.id)\
+        .filter(Record.timestamp >= five_minutes_ago).first()
+
+    if recent_record:
+        return jsonify({
+            "message": f"⚠️ 您在 5 分鐘內已簽到過 {point.name}",
+            "redirect": "/member_checkin_home"
+        })
+
+    # ✅ 若沒重複，新增紀錄
+    record = Record(member_id=member_id, point_id=point.id, timestamp=now)
     db.session.add(record)
     db.session.commit()
 
