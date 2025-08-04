@@ -73,12 +73,14 @@ def api_records():
 
     records = Record.query.order_by(Record.timestamp.desc()).all()
     result = []
+    taipei_time = timezone(timedelta(hours=8))  # 台灣時區
+
     for r in records:
         result.append({
             'account': r.member.account,
             'name': r.member.name,
             'point': r.point.name,
-            'timestamp': r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': r.timestamp.astimezone(taipei_time).strftime('%Y-%m-%d %H:%M:%S')
         })
     return jsonify(result)
 
