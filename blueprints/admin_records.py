@@ -1,6 +1,7 @@
 from flask import Blueprint, request, send_file, render_template, redirect, session, flash, jsonify
 from io import StringIO, BytesIO
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
+
 import csv
 
 from models import db, Record, Member, Point, Report
@@ -14,7 +15,10 @@ def export_form():
         return redirect('/login')
     return render_template('admin/export_form.html')
 
-# ✅ 匯出 CSV 功能
+from openpyxl import Workbook
+from openpyxl.utils import get_column_letter
+
+# ✅ 匯出 XLSX 功能
 @admin_records_bp.route('/export_records', methods=['POST'])
 def export_records():
     if not session.get('admin'):
@@ -36,27 +40,48 @@ def export_records():
         Record.timestamp <= end_date
     ).all()
 
-    str_io = StringIO()
-    writer = csv.writer(str_io)
-    writer.writerow(['隊員姓名', '級職', '巡邏點', '簽到時間'])
+    # ✅ 建立 Excel 檔
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "簽到紀錄"
+
+    # ✅ 表頭
+    headers = ['隊員姓名', '級職', '巡邏點', '簽到時間']
+    ws.append(headers)
+
+    # ✅ 資料列
     for r in records:
-        writer.writerow([
+        ws.append([
             r.member.name,
             r.member.title,
             r.point.name,
             r.timestamp.strftime('%Y-%m-%d %H:%M:%S')
         ])
 
-    byte_io = BytesIO()
-    byte_io.write(str_io.getvalue().encode('utf-8-sig'))  # for Excel
-    byte_io.seek(0)
+    # ✅ 自動調整欄寬
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        ws.column_dimensions[col_letter].width = max_length + 2
+
+    # ✅ 儲存到 BytesIO
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
 
     return send_file(
-        byte_io,
-        mimetype='text/csv',
+        file_stream,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
         as_attachment=True,
-        download_name=f'records_{start_date_str}_to_{end_date_str}.csv'
+        download_name=f'records_{start_date_str}_to_{end_date_str}.xlsx'
     )
+
 
 # ✅ 簽到紀錄頁面
 @admin_records_bp.route('/records')
@@ -76,11 +101,16 @@ def api_records():
     taipei_time = timezone(timedelta(hours=8))  # 台灣時區
 
     for r in records:
+        timestamp = r.timestamp
+        if timestamp.tzinfo is None:
+            timestamp = timestamp.replace(tzinfo=timezone.utc)
+        local_time = timestamp.astimezone(taipei_time).strftime('%Y-%m-%d %H:%M:%S')
+
         result.append({
             'account': r.member.account,
             'name': r.member.name,
             'point': r.point.name,
-            'timestamp': r.timestamp.astimezone(taipei_time).strftime('%Y-%m-%d %H:%M:%S')
+            'timestamp': local_time
         })
     return jsonify(result)
 
