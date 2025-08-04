@@ -48,19 +48,27 @@
       <!-- 🔹 簽到功能區 -->
       <div class="col-md-6">
         <div class="card shadow">
-          <div class="card-header"><i class="bi bi-clipboard-check"></i> 發到與報表</div>
+          <div class="card-header"><i class="bi bi-clipboard-check"></i> 簽到與報表</div>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><i class="bi bi-upc-scan text-primary"></i> <a href="/admin/qrcodes">產生 QR Code</a></li>
-            <li class="list-group-item"><i class="bi bi-journal-text text-primary"></i> <a href="/admin/records">查看簽到紀錄</a></li>
+            <li class="list-group-item">
+              <i class="bi bi-upc-scan text-primary"></i>
+              <a href="/admin/qrcodes">產生 QR Code</a>
+            </li>
+            <li class="list-group-item">
+              <i class="bi bi-journal-text text-primary"></i>
+              <a href="/admin/records">查看簽到紀錄</a>
+            </li>
             <li class="list-group-item">
               <i class="bi bi-exclamation-triangle text-danger"></i>
               <a href="/admin/reports">查看緊急通報</a>
               {% if has_reports %}
-                <span class="badge bg-danger ms-2">有通報</span>
+                <span class="badge bg-danger ms-2 fs-6">🚨 有通報</span>
               {% endif %}
             </li>
-
-            <li class="list-group-item"><i class="bi bi-download text-success"></i> <a href="/admin/export_form">匯出簽到紀錄</a>
+            <li class="list-group-item">
+              <i class="bi bi-file-earmark-excel text-success"></i>
+              <a href="/admin/export_form">下載簽到 Excel</a>
+            </li>
           </ul>
         </div>
       </div>
@@ -70,8 +78,14 @@
         <div class="card shadow">
           <div class="card-header"><i class="bi bi-person-badge"></i> 帳號與巡邏點管理</div>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><i class="bi bi-people-fill text-dark"></i> <a href="/admin/members">隊員帳號管理</a></li>
-            <li class="list-group-item"><i class="bi bi-geo-alt-fill text-dark"></i> <a href="/admin/points">巡邏點管理</a></li>
+            <li class="list-group-item">
+              <i class="bi bi-people-fill text-dark"></i>
+              <a href="/admin/members">隊員帳號管理</a>
+            </li>
+            <li class="list-group-item">
+              <i class="bi bi-geo-alt-fill text-dark"></i>
+              <a href="/admin/points">巡邏點管理</a>
+            </li>
           </ul>
         </div>
       </div>
