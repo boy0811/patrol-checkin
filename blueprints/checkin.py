@@ -53,7 +53,7 @@ def checkin_post():
 
     if recent_record:
         return jsonify({
-            "message": f"⚠️ 您在 5 分鐘內已簽到過 {point.name}",
+            "message": f"✅ 您已簽到成功 {point.name}",
             "redirect": "/member_checkin_home"
         })
 
