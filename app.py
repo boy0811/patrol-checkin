@@ -72,21 +72,22 @@ app.cli.add_command(init_db_command)
 
 @app.route('/create-admin')
 def create_admin():
-    from models import db, Member
-    from werkzeug.security import generate_password_hash
+    try:
+        if Member.query.filter_by(account='admin').first():
+            return '⚠️ 已經有 admin 帳號'
 
-    if Member.query.filter_by(account='admin').first():
-        return '⚠️ 已經有 admin 帳號'
-    
-    admin = Member(
-        account='admin',
-        password_hash=generate_password_hash('1234'),
-        name='管理員',
-        title='隊長'
-    )
-    db.session.add(admin)
-    db.session.commit()
-    return '✅ 管理員 admin / 1234 已建立'
+        admin = Member(
+            account='admin',
+            name='管理員',
+            title='隊長'
+        )
+        admin.set_password('1234')  # ✅ 用 set_password 儲存雜湊
+        db.session.add(admin)
+        db.session.commit()
+        return '✅ 管理員 admin / 1234 已建立'
+    except Exception as e:
+        return f'❌ 發生錯誤：{e}'
+
 
 @app.route('/rebuild-db')
 def rebuild_db():
