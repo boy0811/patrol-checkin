@@ -69,28 +69,15 @@ def init_db_command():
 
 app.cli.add_command(init_db_command)
 
-# ✅ 臨時網頁建表（部署後可透過網址觸發）
-import os
-
-@app.route("/initdb")
-def init_db_web():
-    try:
-        db.create_all()
-        return "✅ 資料表已成功建立"
-    except Exception as e:
-        return f"❌ 建立失敗：{e}"
-
-
-from models import Member  # 確保有這一行
-from werkzeug.security import generate_password_hash  # ⬅️ 加上這
 
 @app.route('/create-admin')
 def create_admin():
-    existing = Member.query.filter_by(account='admin').first()
-    if existing:
-        return "⚠️ 管理員已存在"
-
+    from models import db, Member
     from werkzeug.security import generate_password_hash
+
+    if Member.query.filter_by(account='admin').first():
+        return '⚠️ 已經有 admin 帳號'
+    
     admin = Member(
         account='admin',
         password_hash=generate_password_hash('1234'),
@@ -99,17 +86,7 @@ def create_admin():
     )
     db.session.add(admin)
     db.session.commit()
-
-    # 🔥 自我刪除機制（建議部署環境才啟用）
-    import os
-    import re
-    with open(__file__, 'r', encoding='utf-8') as f:
-        code = f.read()
-    new_code = re.sub(r'@app\.route\([\'"]\/create-admin[\'"]\)[\s\S]+?return "✅ 已建立預設管理員 admin \/ 1234"', '', code)
-    with open(__file__, 'w', encoding='utf-8') as f:
-        f.write(new_code)
-
-    return "✅ 已建立預設管理員 admin / 1234，且此路由已自動移除"
+    return '✅ 管理員 admin / 1234 已建立'
 
 @app.route('/rebuild-db')
 def rebuild_db():
