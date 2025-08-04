@@ -32,7 +32,9 @@ def scan_qr(point_id):
 @checkin_bp.route('/checkin', methods=['POST'])
 def checkin_post():
     data = request.get_json()
-    point_code = data.get('point')  # ✅ QR code 傳入的地點代碼
+    point_code = data.get('point')
+    expected_point_id = data.get('expected_point_id')  # 從前端送過來
+
     member_id = session.get('user_id')
 
     if not point_code or not member_id:
@@ -42,12 +44,19 @@ def checkin_post():
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    # ✅ 使用台灣時間（GMT+8）
+    # ✅ 地點不符阻擋
+    if expected_point_id and int(expected_point_id) != point.id:
+        return jsonify({
+            "message": "❌ 地點不符，請掃描正確 QR Code",
+            "redirect": "/member_checkin_home"
+        })
+
+    # ✅ 時間判斷（使用台灣時間）
+    from pytz import timezone
     taipei = timezone('Asia/Taipei')
     now = datetime.now(taipei)
     five_minutes_ago = now - timedelta(minutes=5)
 
-    # ✅ 檢查是否在 5 分鐘內簽到過該地點
     recent_record = Record.query.filter_by(member_id=member_id, point_id=point.id)\
         .filter(Record.timestamp >= five_minutes_ago).first()
 
@@ -57,7 +66,6 @@ def checkin_post():
             "redirect": "/member_checkin_home"
         })
 
-    # ✅ 若沒重複，新增紀錄
     record = Record(member_id=member_id, point_id=point.id, timestamp=now)
     db.session.add(record)
     db.session.commit()
@@ -66,7 +74,6 @@ def checkin_post():
         "message": f"✅ {point.name} 簽到成功",
         "redirect": "/member_checkin_home"
     })
-
 
 # ✅ 處理 QR Code 開啟的網址
 @checkin_bp.route('/checkin/<code>')

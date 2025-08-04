@@ -18,20 +18,34 @@
   <script>
     const html5QrCode = new Html5Qrcode("reader");
 
+    // ✅ 傳入目前點選的地點 ID（由 Flask 注入）
+    const expectedPointId = {{ point.id }};
+
     function onScanSuccess(decodedText, decodedResult) {
-      // 從 QR Code 內容的網址中擷取代碼（如 /checkin/A1 → A1）
       const parts = decodedText.split('/');
       const code = parts[parts.length - 1];
 
       fetch("/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ point: code })  // ✅ 傳 point code 給後端
+        body: JSON.stringify({
+          point: code,                    // QR 代碼
+          expected_point_id: expectedPointId  // 點選的按鈕 id
+        })
       })
       .then(res => res.json())
       .then(data => {
-        document.getElementById('result').innerHTML =
-          `<div class="alert alert-success">✅ ${data.message}</div>`;
+        const resultDiv = document.getElementById('result');
+        if (data.message.includes("❌") || data.message.includes("⚠️")) {
+          resultDiv.innerHTML = `<div class="alert alert-warning">${data.message}</div>`;
+        } else {
+          resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+        }
+
+        // ✅ 若有 redirect，可自動跳轉
+        if (data.redirect) {
+          setTimeout(() => window.location.href = data.redirect, 2000);
+        }
       })
       .catch(() => {
         document.getElementById('result').innerHTML =
