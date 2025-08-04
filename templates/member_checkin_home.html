@@ -51,9 +51,9 @@
     <div class="d-grid gap-3">
       {% for point in points %}
         {% if point.id in checked_ids %}
-          <button class="btn btn-success point-btn" disabled>✅ {{ point.name }}</button>
+          <button id="point-{{ point.id }}" class="btn btn-success point-btn" disabled data-name="{{ point.name }}">✅ {{ point.name }}</button>
         {% else %}
-          <a href="/checkin/scan/{{ point.id }}" class="btn btn-outline-primary point-btn">{{ point.name }}</a>
+          <a id="point-{{ point.id }}" href="/checkin/scan/{{ point.id }}" class="btn btn-outline-primary point-btn" data-name="{{ point.name }}">{{ point.name }}</a>
         {% endif %}
       {% endfor %}
     </div>
@@ -61,11 +61,24 @@
     <a href="{{ url_for('auth.entry') }}" class="btn btn-link mt-3">返回首頁</a>
   </div>
 
-  <!-- 🔁 每分鐘自動刷新頁面 -->
+  <!-- ✅ 每分鐘局部更新已簽到按鈕 -->
   <script>
     setInterval(() => {
-      location.reload();
-    }, 60 * 1000); // 每 60 秒刷新
+      fetch('/checkin/status')
+        .then(response => response.json())
+        .then(data => {
+          data.checked_ids.forEach(id => {
+            const btn = document.querySelector(`#point-${id}`);
+            if (btn && !btn.disabled) {
+              btn.classList.remove('btn-outline-primary');
+              btn.classList.add('btn-success');
+              btn.textContent = '✅ ' + btn.dataset.name;
+              btn.disabled = true;
+              btn.removeAttribute('href');
+            }
+          });
+        });
+    }, 60000); // 每 60 秒更新
   </script>
 
 </body>

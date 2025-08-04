@@ -80,3 +80,18 @@ def checkin_by_code(code):
 @checkin_bp.route('/checkin', methods=['GET'])
 def checkin_redirect():
     return redirect('/member_checkin_home')
+
+@checkin_bp.route('/checkin/status')
+def checkin_status():
+    member_id = session.get('user_id')
+    if not member_id:
+        return jsonify({'checked_ids': []})
+
+    cutoff_time = datetime.now(tz=tw) - timedelta(minutes=10)
+    checked_ids = [
+        r.point_id for r in Record.query
+        .filter_by(member_id=member_id)
+        .filter(Record.timestamp >= cutoff_time)
+        .all()
+    ]
+    return jsonify({'checked_ids': checked_ids})
