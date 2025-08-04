@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html>
+<html lang="zh-Hant">
 <head>
   <meta charset="utf-8">
   <title>緊急通報</title>
@@ -9,6 +9,7 @@
     body {
       background-color: #f8f9fa;
       padding: 20px;
+      padding-top: 70px; /* 為 call-bar 預留空間 */
     }
     .report-box {
       background: white;
@@ -30,16 +31,18 @@
       background-color: #dc3545;
       color: white;
       text-align: center;
-      padding: 10px;
+      padding: 12px;
       font-size: 1.2rem;
       z-index: 9999;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     .call-bar a {
       color: white;
       text-decoration: none;
+      font-weight: bold;
     }
-    .spacer {
-      height: 52px; /* 推開主體避免被 call-bar 蓋住 */
+    .call-bar i {
+      margin-right: 6px;
     }
   </style>
 </head>
@@ -47,10 +50,12 @@
 
   <!-- 🔔 一鍵撥打 -->
   <div class="call-bar">
-    <a href="tel:034938381">📞 一鍵撥打派出所：034938381</a>
+    <a href="tel:034938381" aria-label="撥打派出所電話">
+      📞 一鍵撥打派出所：034938381
+    </a>
   </div>
-  <div class="spacer"></div>
 
+  <!-- 🚨 通報表單 -->
   <div class="report-box">
     <h4 class="text-danger mb-4 text-center">🚨 緊急通報</h4>
 
