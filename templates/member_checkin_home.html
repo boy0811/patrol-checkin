@@ -45,7 +45,7 @@
       <a href="{{ url_for('emergency.emergency') }}" class="btn btn-danger btn-lg">
         🚨 緊急通報
       </a>
-   </div>
+    </div>
 
     <!-- ✅ 巡邏點按鈕列表 -->
     <div class="d-grid gap-3">
@@ -61,5 +61,12 @@
     <a href="{{ url_for('auth.entry') }}" class="btn btn-link mt-3">返回首頁</a>
   </div>
 
+  <!-- 🔁 每分鐘自動刷新頁面 -->
+  <script>
+    setInterval(() => {
+      location.reload();
+    }, 60 * 1000); // 每 60 秒刷新
+  </script>
+
 </body>
-</html>  
+</html>
