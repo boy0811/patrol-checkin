@@ -2,6 +2,7 @@ from flask import Blueprint, render_template, request, session, redirect, jsonif
 from models import db, Member, Point, Record
 from datetime import datetime, date
 from sqlalchemy import func
+from datetime import datetime, timedelta
 
 checkin_bp = Blueprint('checkin', __name__)
 
@@ -15,11 +16,12 @@ def member_checkin_home():
     member = db.session.get(Member, member_id)
     points = Point.query.order_by(Point.id.asc()).all()
 
-    # ✅ 改為只抓「今天簽到過」的紀錄
+    # ✅ 改為只抓「2 小時內簽到過」的紀錄
+    cutoff = datetime.now() - timedelta(minutes=120)
     checked_ids = [
         r.point_id for r in Record.query
         .filter_by(member_id=member_id)
-        .filter(func.date(Record.timestamp) == date.today())
+        .filter(Record.timestamp >= cutoff)
         .all()
     ]
 
@@ -47,11 +49,12 @@ def checkin_post():
     if not point:
         return jsonify({"message": "❌ 找不到簽到點"}), 400
 
-    # ✅ 改為只查今天是否簽過
+    # ✅ 改為查詢「2 小時內是否已簽到過」
+    cutoff_time = datetime.now() - timedelta(hours=2)
     exists = Record.query.filter_by(member_id=member_id, point_id=point.id) \
-        .filter(func.date(Record.timestamp) == date.today()).first()
+        .filter(Record.timestamp >= cutoff_time).first()
     if exists:
-        return jsonify({"message": f"✅ 您今天已簽到過 {point.name}"}), 200
+        return jsonify({"message": f"✅ 您已簽到過 {point.name}，請間隔 2 小時再試"}), 200
 
     record = Record(member_id=member_id, point_id=point.id, timestamp=datetime.now())
     db.session.add(record)
@@ -61,6 +64,7 @@ def checkin_post():
         "message": f"✅ {point.name} 簽到成功",
         "redirect": "/member_checkin_home"
     })
+
 
 # ✅ 處理 QR Code 開啟的網址
 @checkin_bp.route('/checkin/<code>')
