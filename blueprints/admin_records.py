@@ -107,11 +107,12 @@ def api_records():
         local_time = timestamp.astimezone(taipei_time).strftime('%Y-%m-%d %H:%M:%S')
 
         result.append({
-            'account': r.member.account,
+            'title': r.member.title,
             'name': r.member.name,
             'point': r.point.name,
             'timestamp': local_time
         })
+
     return jsonify(result)
 
 # ✅ 顯示緊急通報紀錄頁面
