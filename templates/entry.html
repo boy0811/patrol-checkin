@@ -38,7 +38,7 @@
 
     <a href="/member_checkin_home" class="btn btn-primary w-100 mb-3">👣 進入巡邏簽到</a>
 
-    {% if member.title in ['分隊長', '副分隊長'] %}
+    {% if member.title in ['隊長', '副分隊長', '分隊長'] %}
       <a href="/admin" class="btn btn-warning w-100 mb-3">🔒 進入管理後台</a>
     {% endif %}
 
