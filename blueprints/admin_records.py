@@ -129,3 +129,72 @@ def view_reports():
     ).join(Member, Report.member_id == Member.id).order_by(Report.timestamp.desc()).all()
 
     return render_template('admin/reports.html', reports=reports)
+
+# ✅ 匯出緊急通報 XLSX
+@admin_records_bp.route('/export_reports', methods=['POST'])
+def export_reports():
+    if not session.get('admin'):
+        return redirect('/login')
+
+    start_date_str = request.form.get('start_date')
+    end_date_str = request.form.get('end_date')
+
+    try:
+        start_date = datetime.strptime(start_date_str, '%Y-%m-%d')
+        end_date = datetime.strptime(end_date_str, '%Y-%m-%d')
+        end_date = datetime.combine(end_date, datetime.max.time())
+    except ValueError:
+        flash("⚠️ 日期格式錯誤", "danger")
+        return redirect('/admin/export_form')
+
+    reports = db.session.query(
+        Member.account,
+        Member.name,
+        Report.description,
+        Report.photo_filename,
+        Report.timestamp
+    ).join(Member, Report.member_id == Member.id)\
+     .filter(Report.timestamp >= start_date, Report.timestamp <= end_date)\
+     .order_by(Report.timestamp.desc()).all()
+
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "緊急通報"
+
+    # ✅ 表頭
+    headers = ['帳號', '姓名', '通報內容', '照片檔名', '通報時間']
+    ws.append(headers)
+
+    # ✅ 資料列
+    for report in reports:
+        account, name, desc, photo, timestamp = report
+        ws.append([
+            account,
+            name,
+            desc,
+            photo,
+            timestamp.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+
+    # ✅ 自動調整欄寬
+    for col in ws.columns:
+        max_length = 0
+        col_letter = get_column_letter(col[0].column)
+        for cell in col:
+            try:
+                if len(str(cell.value)) > max_length:
+                    max_length = len(str(cell.value))
+            except:
+                pass
+        ws.column_dimensions[col_letter].width = max_length + 2
+
+    file_stream = BytesIO()
+    wb.save(file_stream)
+    file_stream.seek(0)
+
+    return send_file(
+        file_stream,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=f'reports_{start_date_str}_to_{end_date_str}.xlsx'
+    )

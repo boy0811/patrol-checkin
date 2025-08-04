@@ -1,10 +1,10 @@
 {% extends "layout.html" %}
 
-{% block title %}匯出簽到紀錄{% endblock %}
+{% block title %}匯出 Excel 紀錄{% endblock %}
 
 {% block content %}
 <div class="container mt-5">
-  <div class="card shadow rounded-4">
+  <div class="card shadow rounded-4 mb-4">
     <div class="card-body">
       <h3 class="mb-4">📤 匯出簽到紀錄</h3>
       <form method="post" action="/admin/export_records">
@@ -19,7 +19,31 @@
           </div>
           <div class="col-md-4">
             <button type="submit" class="btn btn-success">
-              <i class="bi bi-download me-1"></i> 匯出 CSV
+              <i class="bi bi-file-earmark-excel me-1"></i> 下載簽到 Excel
+            </button>
+            <a href="/admin" class="btn btn-secondary">返回</a>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="card shadow rounded-4">
+    <div class="card-body">
+      <h3 class="mb-4">🚨 匯出緊急通報紀錄</h3>
+      <form method="post" action="/admin/export_reports">
+        <div class="row g-3 align-items-end">
+          <div class="col-md-4">
+            <label class="form-label">起始日期</label>
+            <input type="date" class="form-control" name="start_date" required>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label">結束日期</label>
+            <input type="date" class="form-control" name="end_date" required>
+          </div>
+          <div class="col-md-4">
+            <button type="submit" class="btn btn-danger">
+              <i class="bi bi-file-earmark-excel me-1"></i> 下載通報 Excel
             </button>
             <a href="/admin" class="btn btn-secondary">返回</a>
           </div>
