@@ -26,13 +26,16 @@ app.secret_key = 'checkin_secret_key'
 
 # ✅ 判斷 Render 環境並套用資料庫連線字串
 if os.environ.get("RENDER") == "true":
-    # ⚠️ 不要重複加 "?sslmode=require"，Neon 連線字串裡已經有
     app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///checkin.db'
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db.init_app(app)
+
+# ✅ 自動建立資料表（避免 Render PostgreSQL 沒有初始化時出錯）
+with app.app_context():
+    db.create_all()
 
 # 註冊 Blueprint
 app.register_blueprint(auth_bp)
@@ -44,8 +47,9 @@ app.register_blueprint(checkin_bp)
 app.register_blueprint(admin_qrcodes_bp)
 app.register_blueprint(emergency_bp)
 app.register_blueprint(schedule_bp)
-app.register_blueprint(team_api)  
+app.register_blueprint(team_api)
 app.register_blueprint(admin_team_bp)
+
 
 # ✅ 啟動每日定時推播排班通知（早上7點）
 def start_scheduler():
