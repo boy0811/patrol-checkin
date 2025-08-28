@@ -38,12 +38,14 @@
 
     <a href="/member_checkin_home" class="btn btn-primary w-100 mb-3">👣 進入巡邏簽到</a>
 
+    <a href="/schedule" class="btn btn-success w-100 mb-3">📅 班表一覽表</a>  <!-- ✅ 加這一行 -->
+
     {% if member.title in ['隊長', '副分隊長', '分隊長'] %}
       <a href="/admin" class="btn btn-warning w-100 mb-3">🔒 進入管理後台</a>
     {% endif %}
 
     <a href="/logout" class="btn btn-outline-secondary w-100 mt-4">登出</a>
-  </div>
+</div>
 
 </body>
 </html>

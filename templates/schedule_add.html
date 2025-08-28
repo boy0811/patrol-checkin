@@ -1,0 +1,36 @@
+{% extends "layout.html" %}
+{% block title %}新增排班{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+  <h3 class="mb-4">➕ 新增排班</h3>
+  <form method="POST">
+    <div class="mb-3">
+      <label for="date" class="form-label">日期</label>
+      <input type="date" class="form-control" name="date" required>
+    </div>
+
+    <div class="mb-3">
+      <label for="member_id" class="form-label">成員</label>
+      <select name="member_id" class="form-select" required>
+        <option value="">請選擇成員</option>
+        {% for m in members %}
+          <option value="{{ m.id }}">{{ m.name }}（{{ m.title }}）</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="mb-3">
+      <label for="duty_type" class="form-label">值勤類型</label>
+      <select name="duty_type" class="form-select" required>
+        <option value="巡邏">巡邏</option>
+        <option value="內勤">內勤</option>
+        <option value="督勤">督勤</option>
+      </select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">✅ 新增</button>
+    <a href="{{ url_for('schedule.schedule_home') }}" class="btn btn-secondary">返回</a>
+  </form>
+</div>
+{% endblock %}

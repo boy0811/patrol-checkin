@@ -1,0 +1,24 @@
+{% extends "layout.html" %}
+{% block title %}匯入排班表{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h3>📥 匯入排班表</h3>
+  <form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label class="form-label">上傳 CSV 檔案</label>
+      <input class="form-control" type="file" name="file" required>
+    </div>
+    <button class="btn btn-primary" type="submit">匯入</button>
+    <a class="btn btn-secondary" href="/schedule">取消</a>
+  </form>
+
+  <div class="mt-4">
+    <strong>CSV 格式範例：</strong>
+    <pre>
+日期,職稱,姓名
+2025-08-04,隊員,王小明
+2025-08-04,隊長,林大偉
+    </pre>
+  </div>
+</div>
+{% endblock %}

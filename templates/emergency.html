@@ -29,12 +29,20 @@
 
   <!-- 🔔 一鍵撥打 -->
   <div class="call-bar">
-    <a href="tel:034938381"
-       class="btn btn-danger btn-lg fw-bold shadow-sm"
-       style="border-radius:50px">
-      📞 一鍵撥打宋屋派出所
-    </a>
+    {% if team and team.phone_number %}
+      <a href="tel:{{ team.phone_number }}"
+         class="btn btn-danger btn-lg fw-bold shadow-sm"
+         style="border-radius:50px">
+         📞 一鍵撥打{{ team.name or '警察局' }}
+       </a>
+    {% else %}
+      <button class="btn btn-secondary btn-lg fw-bold shadow-sm" disabled
+              style="border-radius:50px">
+        ⚠️ 尚未設定派出所電話
+      </button>
+    {% endif %}
   </div>
+
 
   <!-- 🚨 通報表單 -->
   <div class="report-box">

@@ -1,0 +1,29 @@
+{% extends "layout.html" %}
+{% block title %}上傳隊伍 Logo{% endblock %}
+
+{% block content %}
+<div class="form-container">
+  <h3 class="mb-4">🖼 上傳隊伍 Logo</h3>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for category, message in messages %}
+      <div class="alert alert-{{ category }}">{{ message }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="POST" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="logo" class="form-label">選擇 Logo 圖片（建議正方 PNG/JPG）</label>
+      <input class="form-control" type="file" id="logo" name="logo" accept="image/*" required>
+    </div>
+    <button type="submit" class="btn btn-primary">📤 上傳</button>
+    <a href="/admin" class="btn btn-secondary">返回後台</a>
+  </form>
+
+  {% if logo_exists %}
+  <hr class="my-4">
+  <p>目前已上傳的 Logo：</p>
+  <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="Logo 預覽" width="150">
+  {% endif %}
+</div>
+{% endblock %}

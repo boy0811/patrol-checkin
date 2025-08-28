@@ -1,6 +1,7 @@
-from flask import Blueprint, render_template, redirect, session, send_file
+from flask import Blueprint, render_template, redirect, session, send_file, request, flash
 from models import db, Member, Point
 from models import Report
+from models import Team
 import qrcode
 import os
 
@@ -32,3 +33,20 @@ def admin_dashboard():
     has_reports = len(unread_reports) > 0
 
     return render_template('admin_dashboard.html', has_reports=has_reports)
+
+@admin_bp.route('/team', methods=['GET', 'POST'])
+def admin_team():
+    team = Team.query.first()
+    if request.method == 'POST':
+        name = request.form.get('name')
+        phone = request.form.get('phone')
+        if not team:
+            team = Team(name=name, phone_number=phone)
+            db.session.add(team)
+        else:
+            team.name = name
+            team.phone_number = phone
+        db.session.commit()
+        flash('✅ 隊伍資訊已更新')
+        return redirect('/admin/team')
+    return render_template('admin_team.html', team=team)

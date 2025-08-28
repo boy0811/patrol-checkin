@@ -8,6 +8,9 @@ admin_qrcodes_bp = Blueprint('admin_qrcodes', __name__, url_prefix='/admin/qrcod
 QRCODE_DIR = 'static/qrcodes'
 os.makedirs(QRCODE_DIR, exist_ok=True)
 
+# ✅ 手動指定區網 IP（讓手機模擬器能掃描成功）
+BASE_URL = "http://192.168.0.116:5000"  # ← 換成你自己的電腦 IP
+
 # ✅ 權限判斷
 def is_admin_user():
     if session.get('admin'):
@@ -29,8 +32,7 @@ def qrcode_list():
         filename = f"{point.code}.png"
         filepath = os.path.join(QRCODE_DIR, filename)
         if not os.path.exists(filepath):
-            # ✅ 改為部署用網址
-            qr_url = url_for('checkin.checkin_by_code', code=point.code, _external=True)
+            qr_url = f"{BASE_URL}/checkin/{point.code}"  # ✅ 手動組網址
             img = qrcode.make(qr_url)
             img.save(filepath)
         qrcodes.append({
@@ -46,15 +48,17 @@ def refresh_qrcodes():
     if not is_admin_user():
         return redirect(url_for('login'))
 
+    # 刪除舊的 QR Code 圖片
     for fname in os.listdir(QRCODE_DIR):
         if fname.endswith('.png'):
             os.remove(os.path.join(QRCODE_DIR, fname))
 
+    # 重新產生新的
     points = Point.query.all()
     for point in points:
         filename = f"{point.code}.png"
         filepath = os.path.join(QRCODE_DIR, filename)
-        qr_url = url_for('checkin.checkin_by_code', code=point.code, _external=True)
+        qr_url = f"{BASE_URL}/checkin/{point.code}"  # ✅ 手動組網址
         img = qrcode.make(qr_url)
         img.save(filepath)
 

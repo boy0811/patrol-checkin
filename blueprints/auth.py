@@ -5,6 +5,14 @@ from models import db, Member, Point, Record
 
 auth_bp = Blueprint('auth', __name__)
 
+def is_admin_user():
+    if session.get('admin'):
+        return True
+    if 'user_id' in session:
+        user = db.session.get(Member, session['user_id'])
+        return user and user.title in ['隊長', '副分隊長', '分隊長']
+    return False
+
 @auth_bp.route('/logout')
 def logout():
     session.clear()
@@ -60,3 +68,28 @@ def member_checkin_home():
     checked_ids = [r.point_id for r in Record.query.filter_by(member_id=member_id).all()]
 
     return render_template('member_checkin_home.html', member=member, points=points, checked_ids=checked_ids)
+
+@auth_bp.route('/test_create_member')
+def test_create_member():
+    acc = 'baby0204'
+    pwd = '12345678'
+
+    existing = Member.query.filter_by(account=acc).first()
+    if not existing:
+        member = Member(name='測試人員', account=acc, title='分隊長')  # ⬅️ 改為最高權限
+        member.set_password(pwd)
+        db.session.add(member)
+        db.session.commit()
+        return f'✅ 建立成功：帳號 {acc}，密碼 {pwd}（分隊長）'
+    else:
+        return f'⚠️ 帳號已存在：{acc}（職稱：{existing.title}）'
+
+@auth_bp.route('/admin/grant_test_admin')
+def grant_test_admin():
+    member = Member.query.filter_by(account='baby0204').first()
+    if member:
+        member.title = '隊長'
+        db.session.commit()
+        return "✅ 測試人員職稱已更新為『隊長』"
+    return "❌ 找不到該帳號"
+

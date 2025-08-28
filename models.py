@@ -41,3 +41,18 @@ class Report(db.Model):
     description = db.Column(db.Text, nullable=False)
     photo_filename = db.Column(db.String(200))
     timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+class Schedule(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    member_id = db.Column(db.Integer, db.ForeignKey('member.id'), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    duty_type = db.Column(db.String(10), nullable=False)  # 例如：巡邏 / 內勤 / 督勤
+
+    member = db.relationship('Member', backref='schedules')
+
+class Team(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100))  # 隊伍名稱
+    phone_number = db.Column(db.String(20))  # 警察局電話
+    station_name = db.Column(db.String(100))  # ⬅️ 新增：警察局名稱
+

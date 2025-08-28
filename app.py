@@ -1,5 +1,4 @@
-# app.py
-from flask import Flask, redirect, url_for, session, render_template, send_from_directory, jsonify
+from flask import Flask, redirect, url_for, session, render_template, send_from_directory, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from models import db
 from blueprints.auth import auth_bp
@@ -10,21 +9,25 @@ from blueprints.admin_records import admin_records_bp
 from blueprints.checkin import checkin_bp
 from blueprints.admin_qrcodes import admin_qrcodes_bp
 from blueprints.emergency import emergency_bp
-from models import Member, Point  # ← ⬅️ 加入 Point
-
+from models import Member, Point 
+from blueprints.schedule import schedule_bp
+from line_push import push_today_schedule_to_individuals
+from apscheduler.schedulers.background import BackgroundScheduler
+from flask.cli import with_appcontext
+from api.team import team_api
+from blueprints.admin_team import admin_team_bp
 
 import os
 import click
-from flask.cli import with_appcontext
+import atexit
 
 app = Flask(__name__)
 app.secret_key = 'checkin_secret_key'
 
 # ✅ 判斷 Render 環境並套用資料庫連線字串
 if os.environ.get("RENDER") == "true":
-    # ❌ 注意：這一行會導致部分路由無法運作，應該註解掉
-    # app.config['SERVER_NAME'] = 'patrol-checkin-1.onrender.com'
-    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL") + "?sslmode=require"
+    # ⚠️ 不要重複加 "?sslmode=require"，Neon 連線字串裡已經有
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get("DATABASE_URL")
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///checkin.db'
 
@@ -40,6 +43,18 @@ app.register_blueprint(admin_records_bp)
 app.register_blueprint(checkin_bp)
 app.register_blueprint(admin_qrcodes_bp)
 app.register_blueprint(emergency_bp)
+app.register_blueprint(schedule_bp)
+app.register_blueprint(team_api)  
+app.register_blueprint(admin_team_bp)
+
+# ✅ 啟動每日定時推播排班通知（早上7點）
+def start_scheduler():
+    scheduler = BackgroundScheduler()
+    scheduler.add_job(func=push_today_schedule_to_individuals, trigger="cron", hour=7, minute=0)
+    scheduler.start()
+    atexit.register(lambda: scheduler.shutdown())
+
+start_scheduler()
 
 # ✅ 預設首頁導向登入
 @app.route('/')
@@ -69,7 +84,6 @@ def init_db_command():
 
 app.cli.add_command(init_db_command)
 
-
 @app.route('/create-admin')
 def create_admin():
     try:
@@ -81,13 +95,12 @@ def create_admin():
             name='管理員',
             title='隊長'
         )
-        admin.set_password('1234')  # ✅ 用 set_password 儲存雜湊
+        admin.set_password('1234')  
         db.session.add(admin)
         db.session.commit()
         return '✅ 管理員 admin / 1234 已建立'
     except Exception as e:
         return f'❌ 發生錯誤：{e}'
-
 
 @app.route('/rebuild-db')
 def rebuild_db():
@@ -95,7 +108,7 @@ def rebuild_db():
     db.create_all()
 
     admin = Member(account='admin', title='隊長', name='管理員')
-    admin.set_password('1234')  # ✅ 正確建立密碼雜湊
+    admin.set_password('1234')
     db.session.add(admin)
 
     points = [
@@ -113,7 +126,6 @@ def dev_init():
     from models import db, Member
     db.create_all()
 
-    # 新增管理員帳號
     if not Member.query.filter_by(account='admin').first():
         admin = Member(account='admin', name='管理員', title='隊長')
         admin.set_password('1234')
@@ -131,8 +143,45 @@ def db_test():
     except Exception as e:
         return f"❌ 無法連線到資料庫：{e}"
 
-# force git detect change
-# ✅ 主程式（僅限本地測試）
+@app.route('/bind_line', methods=['GET', 'POST'])
+def bind_line():
+    if request.method == 'POST':
+        acc = request.form.get('account')
+        user_id = request.form.get('user_id')
+
+        member = Member.query.filter_by(account=acc).first()
+        if member:
+            member.line_user_id = user_id
+            db.session.commit()
+            return '✅ 綁定成功'
+        return '❌ 找不到帳號，請確認輸入正確'
+
+    return render_template('bind_line.html')
+
+@app.route('/admin/line_bind_list')
+def admin_line_bind_list():
+    members = Member.query.order_by(Member.title, Member.name).all()
+    return render_template('admin_line_binds.html', members=members)
+
+@app.route('/fix-team-name')
+def fix_team_name():
+    from models import Team
+    team = Team.query.first()
+    if team:
+        team.name = "文化志工隊"
+        db.session.commit()
+        return '✅ 已補上隊伍名稱'
+    return '❌ 沒有隊伍資料'
+
+@app.context_processor
+def inject_team_info():
+    from models import Team
+    team = Team.query.first()
+    return dict(team_info={
+        'name': team.name if team else '未設定隊伍',
+        'phone': team.phone_number if team else '未設定電話'
+    })
+
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))  # ⬅️ 使用 Render 指定的 PORT，預設為 5000
+    port = int(os.environ.get("PORT", 5000))
     app.run(host='0.0.0.0', port=port)

@@ -39,7 +39,21 @@
 </head>
 <body>
   <div class="container py-5">
+    
+    {% if team_info %}
+      {% if team_info.logo %}
+        <div class="text-center mb-3">
+          <img src="{{ url_for('static', filename='logo/logo.png') }}" alt="隊伍 Logo" width="100">
+        </div>
+      {% endif %}
+      <div class="alert alert-info mb-4">
+        <strong>📘 {{ team_info.name }}</strong><br>
+        📞 警察局聯絡電話：{{ team_info.phone }}
+      </div>
+    {% endif %}
+
     {% block content %}{% endblock %}
+    
     <div class="mt-5 text-end">
       <a href="/logout" class="btn btn-outline-secondary"><i class="bi bi-box-arrow-right"></i> 登出</a>
     </div>

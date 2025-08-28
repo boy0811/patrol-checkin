@@ -1,0 +1,38 @@
+{% extends "layout.html" %}
+{% block title %}排班表{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h3>📋 排班一覽表</h3>
+  <div class="mb-3">
+    <a class="btn btn-success me-2" href="/schedule/import">📥 匯入排班表</a>
+    <a class="btn btn-primary" href="/schedule/add">➕ 新增排班</a>
+  </div>
+  <table class="table table-bordered">
+    <thead>
+      <tr>
+        <th>日期</th>
+        <th>姓名</th>
+        <th>職稱</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in schedules %}
+      <tr>
+        <td>{{ s.date }}</td>
+        <td>{{ s.member.name }}</td>
+        <td>{{ s.member.title }}</td>
+      </tr>
+      {% else %}
+      <tr>
+        <td colspan="3" class="text-center text-muted">尚無排班資料</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="container mt-3 text-end">
+  <a href="/entry" class="btn btn-secondary">⬅️ 返回</a>
+</div>
+{% endblock %}

@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, render_template, request, redirect, session, flash
 from werkzeug.utils import secure_filename
 from datetime import datetime
-from models import db, Member, Report
+from models import db, Member, Report, Team  # ✅ 多加 Team
 
 UPLOAD_DIR = 'uploads'
 os.makedirs(UPLOAD_DIR, exist_ok=True)
@@ -15,6 +15,7 @@ def emergency():
         return redirect('/login')
 
     user = db.session.get(Member, session['user_id'])
+    team = Team.query.first()  # ✅ 查出隊伍資料
 
     if request.method == 'POST':
         desc = request.form['description']
@@ -35,4 +36,4 @@ def emergency():
         flash('✅ 通報已送出')
         return redirect('/emergency')
 
-    return render_template('emergency.html', user=user)
+    return render_template('emergency.html', user=user, team=team)  # ✅ 傳入 team
