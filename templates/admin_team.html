@@ -6,24 +6,30 @@
 <div class="form-container">
   <h3 class="mb-4">🛠 隊伍與警察局資訊設定</h3>
 
-  {% with messages = get_flashed_messages() %}
+  <!-- ✅ 顯示所有 flash 訊息，並依類型套用不同樣式 -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
     {% if messages %}
-      <div class="alert alert-success">{{ messages[0] }}</div>
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }}">{{ msg }}</div>
+      {% endfor %}
     {% endif %}
   {% endwith %}
 
   <form method="POST">
     <div class="mb-3">
       <label for="team_name" class="form-label">隊伍名稱</label>
-      <input type="text" class="form-control" id="team_name" name="name" required value="{{ team.name if team else '' }}">
+      <input type="text" class="form-control" id="team_name" name="name" required
+             value="{{ team.name if team else '' }}">
     </div>
     <div class="mb-3">
       <label for="station_name" class="form-label">警察局名稱</label>
-      <input type="text" class="form-control" id="station_name" name="station_name" required value="{{ team.station_name if team else '' }}">
+      <input type="text" class="form-control" id="station_name" name="station_name" required
+             value="{{ team.station_name if team else '' }}">
     </div>
     <div class="mb-3">
       <label for="phone" class="form-label">警察局電話</label>
-      <input type="text" class="form-control" id="phone" name="phone_number" required value="{{ team.phone_number if team else '' }}">
+      <input type="text" class="form-control" id="phone" name="phone_number" required
+             value="{{ team.phone_number if team else '' }}">
     </div>
     <button type="submit" class="btn btn-primary">💾 儲存</button>
     <a href="/admin" class="btn btn-secondary">返回後台</a>

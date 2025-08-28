@@ -7,13 +7,20 @@ admin_team_bp = Blueprint('admin_team', __name__, url_prefix='/admin')
 @admin_team_bp.route('/team', methods=['GET', 'POST'])
 def admin_team():
     team = Team.query.first()
+
+    # ✅ 如果還沒有隊伍資料，就建立一筆
+    if not team:
+        team = Team(name='', station_name='', phone_number='')
+        db.session.add(team)
+        db.session.commit()
+
     if request.method == 'POST':
         team.name = request.form.get('name') or ''
         team.station_name = request.form.get('station_name') or ''
         team.phone_number = request.form.get('phone_number') or ''
         db.session.commit()
         flash('✅ 資料已更新', 'success')
-        return redirect('/admin')
+        return redirect('/admin/team')   # ⚠️ 這裡改成回到同一頁，才會看到更新結果
 
     return render_template('admin_team_form.html', team=team)
 

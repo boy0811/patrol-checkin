@@ -180,11 +180,20 @@ def fix_team_name():
 @app.context_processor
 def inject_team_info():
     from models import Team
+    import os
+
     team = Team.query.first()
+
+    # 檢查是否有上傳 logo.png
+    logo_exists = os.path.exists(os.path.join("static", "logo", "logo.png"))
+
     return dict(team_info={
         'name': team.name if team else '未設定隊伍',
-        'phone': team.phone_number if team else '未設定電話'
+        'station': team.station_name if team else '未設定警察局',
+        'phone': team.phone_number if team else '未設定電話',
+        'logo': logo_exists   # ✅ True/False 給前端判斷
     })
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))
