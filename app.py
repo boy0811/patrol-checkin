@@ -181,18 +181,28 @@ def fix_team_name():
 def inject_team_info():
     from models import Team
     import os
+    db.session.expire_all()  # ✅ 清掉快取，下次 query 一定讀最新資料
 
     team = Team.query.first()
-
-    # 檢查是否有上傳 logo.png
     logo_exists = os.path.exists(os.path.join("static", "logo", "logo.png"))
 
     return dict(team_info={
-        'name': team.name if team else '未設定隊伍',
-        'station': team.station_name if team else '未設定警察局',
-        'phone': team.phone_number if team else '未設定電話',
-        'logo': logo_exists   # ✅ True/False 給前端判斷
+        'name': (team.name if team and team.name else '未設定隊伍'),
+        'station': (team.station_name if team and team.station_name else '未設定警察局'),
+        'phone': (team.phone_number if team and team.phone_number else '未設定電話'),
+        'logo': logo_exists
     })
+
+
+@app.route("/reset-team")
+def reset_team():
+    from models import Team, db
+    db.drop_all()
+    db.create_all()
+    team = Team(name="復旦里守望相助隊", station_name="桃園分局", phone_number="03-1234567")
+    db.session.add(team)
+    db.session.commit()
+    return "✅ Team 資料表已重建，並建立一筆測試資料"
 
 
 if __name__ == "__main__":

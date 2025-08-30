@@ -16,21 +16,34 @@
   {% endwith %}
 
   <form method="POST">
+    <!-- 隊伍名稱 -->
     <div class="mb-3">
       <label for="team_name" class="form-label">隊伍名稱</label>
-      <input type="text" class="form-control" id="team_name" name="name" required
-             value="{{ team.name if team else '' }}">
+      <input type="text" class="form-control" id="team_name" name="name"
+             value="{{ team.name or '' }}"
+             placeholder="請輸入隊伍名稱">
     </div>
+
+    <!-- 警察局名稱 -->
     <div class="mb-3">
       <label for="station_name" class="form-label">警察局名稱</label>
-      <input type="text" class="form-control" id="station_name" name="station_name" required
-             value="{{ team.station_name if team else '' }}">
+      <input type="text" class="form-control" id="station_name" name="station_name"
+             value="{{ team.station_name or '' }}"
+             placeholder="請輸入警察局名稱">
     </div>
+
+    <!-- 警察局電話 -->
     <div class="mb-3">
       <label for="phone" class="form-label">警察局電話</label>
-      <input type="text" class="form-control" id="phone" name="phone_number" required
-             value="{{ team.phone_number if team else '' }}">
+      <input type="tel" class="form-control" id="phone" name="phone_number"
+             value="{{ team.phone_number or '' }}"
+             placeholder="請輸入警察局電話"
+             pattern="[0-9\-+() ]*"
+             inputmode="tel">
+      <div class="form-text">格式範例：03-1234567 或 0912-345-678</div>
     </div>
+
+    <!-- 按鈕 -->
     <button type="submit" class="btn btn-primary">💾 儲存</button>
     <a href="/admin" class="btn btn-secondary">返回後台</a>
   </form>

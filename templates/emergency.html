@@ -14,9 +14,9 @@
     }
     .call-bar{
       position:fixed; top:0; left:0; width:100%;
-      padding:12px 0;         /* 與下方陰影寬度一致 */
+      padding:12px 0;
       text-align:center; z-index:1050;
-      backdrop-filter:blur(4px);      /* 淡淡玻璃效果 */
+      backdrop-filter:blur(4px);
     }
     .report-box{
       background:#fff; padding:30px; border-radius:16px;
@@ -33,7 +33,7 @@
       <a href="tel:{{ team.phone_number }}"
          class="btn btn-danger btn-lg fw-bold shadow-sm"
          style="border-radius:50px">
-         📞 一鍵撥打{{ team.name or '警察局' }}
+         📞 一鍵撥打 {{ team.station_name or '派出所' }}
        </a>
     {% else %}
       <button class="btn btn-secondary btn-lg fw-bold shadow-sm" disabled
@@ -43,14 +43,14 @@
     {% endif %}
   </div>
 
-
   <!-- 🚨 通報表單 -->
   <div class="report-box">
     <h4 class="text-danger mb-4 text-center">🚨 緊急通報</h4>
 
-    {% with messages = get_flashed_messages() %}
-      {% for msg in messages %}
-        <div class="alert alert-success">{{ msg }}</div>
+    <!-- ✅ 支援多種類型 flash 訊息 -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for category, msg in messages %}
+        <div class="alert alert-{{ category }} text-center">{{ msg }}</div>
       {% endfor %}
     {% endwith %}
 

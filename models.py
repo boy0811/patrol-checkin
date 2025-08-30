@@ -52,7 +52,8 @@ class Schedule(db.Model):
 
 class Team(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100))  # 隊伍名稱
-    phone_number = db.Column(db.String(20))  # 警察局電話
-    station_name = db.Column(db.String(100))  # ⬅️ 新增：警察局名稱
+    name = db.Column(db.String(100))          # 隊伍名稱
+    phone_number = db.Column(db.String(50))   # 警察局電話（放寬長度）
+    station_name = db.Column(db.String(100))  # 警察局名稱
+
 
