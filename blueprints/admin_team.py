@@ -1,11 +1,19 @@
-from flask import Blueprint, render_template, request, redirect, flash
+from flask import Blueprint, render_template, request, redirect, flash, session, url_for
 from models import db, Team
 import os
 
 admin_team_bp = Blueprint('admin_team', __name__, url_prefix='/admin')
 
+def _need_admin():
+    return session.get('admin') is True
+
 @admin_team_bp.route('/team', methods=['GET', 'POST'])
 def admin_team():
+    # 權限檢查
+    if not _need_admin():
+        flash("❌ 沒有權限", "danger")
+        return redirect(url_for("auth.login"))
+
     team = Team.query.first()
 
     # ✅ 如果還沒有隊伍資料，就建立一筆
@@ -13,31 +21,29 @@ def admin_team():
         team = Team(name='', station_name='', phone_number='')
         db.session.add(team)
         db.session.commit()
+        print("🆕 新建一筆空白 Team:", team.__dict__)
 
     if request.method == 'POST':
-        team.name = request.form.get('name') or ''
-        team.station_name = request.form.get('station_name') or ''
-        team.phone_number = request.form.get('phone_number') or ''
-        db.session.commit()
-        flash('✅ 資料已更新', 'success')
-        return redirect('/admin/team')   # ⚠️ 這裡改成回到同一頁，才會看到更新結果
+        try:
+            # 使用 (.. or '').strip() 確保 None 變成空字串
+            team.name = (request.form.get('name') or '').strip()
+            team.station_name = (request.form.get('station_name') or '').strip()
+            team.phone_number = (request.form.get('phone_number') or '').strip()
+
+            print("📌 更新前:", team.__dict__)   # 🟡 Debug：更新前資料
+
+            db.session.commit()
+            db.session.refresh(team)   # 確保馬上刷新
+
+            print("✅ 更新後:", team.__dict__)   # 🟢 Debug：更新後資料
+
+            flash(f'✅ 資料已更新：{team.station_name}, {team.phone_number}', 'success')
+
+        except Exception as e:
+            db.session.rollback()
+            print("❌ 更新失敗，錯誤:", e)
+            flash(f'❌ 儲存失敗：{e}', 'danger')
+
+        return redirect(url_for('admin_team.admin_team'))   # 回到同一頁
 
     return render_template('admin_team_form.html', team=team)
-
-@admin_team_bp.route('/upload_logo', methods=['GET', 'POST'])
-def upload_logo():
-    if request.method == 'POST':
-        file = request.files.get('logo')
-        if file and file.filename.lower().endswith(('.png', '.jpg', '.jpeg')):
-            filename = 'logo.png'
-            save_path = os.path.join('static', 'logo')
-            os.makedirs(save_path, exist_ok=True)
-            file.save(os.path.join(save_path, filename))
-            flash('✅ Logo 上傳成功！', 'success')
-        else:
-            flash('❌ 請選擇 PNG / JPG 圖片', 'danger')
-        return redirect('/admin/upload_logo')
-
-    # ✅ 判斷是否已有 logo
-    logo_exists = os.path.exists(os.path.join('static', 'logo', 'logo.png'))
-    return render_template('admin_logo_upload.html', logo_exists=logo_exists)
