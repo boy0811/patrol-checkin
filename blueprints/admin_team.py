@@ -1,9 +1,10 @@
 from flask import Blueprint, render_template, request, redirect, flash, session, url_for
 from models import db, Team
-import os
 
+# Blueprint 註冊
 admin_team_bp = Blueprint('admin_team', __name__, url_prefix='/admin')
 
+# 權限檢查
 def _need_admin():
     return session.get('admin') is True
 
@@ -16,7 +17,7 @@ def admin_team():
 
     team = Team.query.first()
 
-    # ✅ 如果還沒有隊伍資料，就建立一筆
+    # 如果還沒有隊伍資料，就自動建立一筆
     if not team:
         team = Team(name='', station_name='', phone_number='')
         db.session.add(team)
@@ -25,25 +26,29 @@ def admin_team():
 
     if request.method == 'POST':
         try:
-            # 使用 (.. or '').strip() 確保 None 變成空字串
+            print("🔥 進來 POST /admin/team")
+            print("📩 收到表單:", dict(request.form))
+
+            # 更新資料
             team.name = (request.form.get('name') or '').strip()
             team.station_name = (request.form.get('station_name') or '').strip()
             team.phone_number = (request.form.get('phone_number') or '').strip()
 
-            print("📌 更新前:", team.__dict__)   # 🟡 Debug：更新前資料
-
+            db.session.add(team)   # 確保被追蹤
             db.session.commit()
-            db.session.refresh(team)   # 確保馬上刷新
 
-            print("✅ 更新後:", team.__dict__)   # 🟢 Debug：更新後資料
+            # 再查一次確認
+            updated_team = Team.query.first()
+            print("✅ 更新後:", updated_team.name, updated_team.station_name, updated_team.phone_number)
 
-            flash(f'✅ 資料已更新：{team.station_name}, {team.phone_number}', 'success')
+            flash(f'✅ 資料已更新：{updated_team.station_name}, {updated_team.phone_number}', 'success')
 
         except Exception as e:
             db.session.rollback()
-            print("❌ 更新失敗，錯誤:", e)
+            print("❌ 更新失敗:", e)
             flash(f'❌ 儲存失敗：{e}', 'danger')
 
-        return redirect(url_for('admin_team.admin_team'))   # 回到同一頁
+        return redirect(url_for('admin_team.admin_team'))
 
-    return render_template('admin_team_form.html', team=team)
+    # GET 請求 → 顯示頁面
+    return render_template('admin_team.html', team=team)

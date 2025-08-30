@@ -15,7 +15,8 @@
     {% endif %}
   {% endwith %}
 
-  <form method="POST">
+  
+  <form method="POST" action="{{ url_for('admin_team.admin_team') }}">
     <!-- 隊伍名稱 -->
     <div class="mb-3">
       <label for="team_name" class="form-label">隊伍名稱</label>

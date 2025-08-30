@@ -193,7 +193,6 @@ def inject_team_info():
         'logo': logo_exists
     })
 
-
 @app.route("/reset-team")
 def reset_team():
     from models import Team, db
