@@ -17,49 +17,74 @@
 
   <script>
     const html5QrCode = new Html5Qrcode("reader");
+    const expectedPointId = {{ point.id }};  // Flask 注入地點 ID
+    let hasScanned = false; // 避免重複觸發
 
-    // ✅ 傳入目前點選的地點 ID（由 Flask 注入）
-    const expectedPointId = {{ point.id }};
+    function showMessage(message, type="info") {
+      const cssClass = {
+        success: "alert-success",
+        warning: "alert-warning",
+        danger: "alert-danger",
+        info: "alert-info"
+      }[type] || "alert-info";
+
+      document.getElementById('result').innerHTML =
+        `<div class="alert ${cssClass}">${message}</div>`;
+    }
 
     function onScanSuccess(decodedText, decodedResult) {
+      if (hasScanned) return;  // 防止重複送出
+      hasScanned = true;
+
+      html5QrCode.stop().then(() => {
+        console.log("Camera stopped after successful scan");
+      }).catch(err => console.warn("Stop camera failed:", err));
+
       const parts = decodedText.split('/');
       const code = parts[parts.length - 1];
+
+      if (!code || code.length < 3) {
+        showMessage("❌ 無效的 QR Code", "danger");
+        return;
+      }
 
       fetch("/checkin", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          point: code,                    // QR 代碼
-          expected_point_id: expectedPointId  // 點選的按鈕 id
+          point: code,
+          expected_point_id: expectedPointId
         })
       })
       .then(res => res.json())
       .then(data => {
-        const resultDiv = document.getElementById('result');
-        if (data.message.includes("❌") || data.message.includes("⚠️")) {
-          resultDiv.innerHTML = `<div class="alert alert-warning">${data.message}</div>`;
+        if (data.message.includes("❌")) {
+          showMessage(data.message, "danger");
+        } else if (data.message.includes("⚠️")) {
+          showMessage(data.message, "warning");
         } else {
-          resultDiv.innerHTML = `<div class="alert alert-success">${data.message}</div>`;
+          showMessage(data.message, "success");
         }
 
-        // ✅ 若有 redirect，可自動跳轉
         if (data.redirect) {
           setTimeout(() => window.location.href = data.redirect, 2000);
         }
       })
       .catch(() => {
-        document.getElementById('result').innerHTML =
-          `<div class="alert alert-danger">❌ 發生錯誤，請重試</div>`;
+        showMessage("❌ 發生錯誤，請重試", "danger");
       });
     }
 
+    // 啟動相機
     html5QrCode.start(
       { facingMode: "environment" },
       { fps: 10, qrbox: 250 },
       onScanSuccess
-    ).catch(err => {
-      document.getElementById('result').innerHTML =
-        `<div class="alert alert-danger">❌ 相機開啟失敗</div>`;
+    ).then(() => {
+      showMessage("📷 相機已開啟，請對準 QR Code", "info");
+    }).catch(err => {
+      console.error("Camera start failed:", err);
+      showMessage("❌ 相機開啟失敗，請檢查瀏覽器權限", "danger");
     });
   </script>
 </body>
